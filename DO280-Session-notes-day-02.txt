@@ -1,0 +1,253 @@
+
+POint-01##
+# Product:-
+- RedHat Openshift  [ Publuc - AWS,Azure,GCP,IBM ]
+- RedHat Openshift  [ Private/Virtulization - RHOSP,VMware-ESXI, KVM, RHV]
+- RedHat Openshift  [ Bare Metal]
+Note: Red Hat Openshift anywehre.
+
+POint-02##
+Classroom Setup/ OCP cluster setup.
+- Users Details:-
+  student/student; root/redhat - w.r.t VMs logins 
+  
+  admin/redhatocp; developer/developer ; kubeadmin/kubeadmin-password.
+  FYI- 
+    kubeadmin/kubeadmin-password 
+	[ssh root@utility ; cd /home/lab/ocp4/auth/ ; ls -l kubeconfig kubeadmin-password]
+	
+  $ oc login -u admin -p redhatocp https://api.ocp4.example.com:6443 
+  
+- VMs/Serves.
+  workstation.lab.example.com [ oc/helm/htpasswd - jump server to login to OCP cluster]
+  FYI- NAT configuration already done - connect to 192.168.50.0/24 network
+  
+  utility.ocp4.example.com 
+  FYI
+   - VMs/Server used to build OCP cluster (ocp4 on baseDomain- example.com]
+   - Services running [HAproxy, DNS, DHCP, NFS-Server (storageClass to OCP), Apache etc.
+   - eth0-172.25.250.254/24 ; eth1-192.168.50.254/24 ; eth2-192.168.51.254.
+
+   registry.ocp4.example.com - git.lab.example.com 
+   
+   idm.ocp4.example.com [admin/redhatocp]
+   
+   master01.ocp4.example.com [ Cluster nodes - master-worker]
+   eth0-192.168.50.10/24 ; eth1-192.168.51.10/24 
+   
+# Unit-1
+  - Resource Manifest.
+    - Create resource manifest.
+    - validation
+  - Kustomization-Overlay 
+    - base structure for Kustomization - kustomization.yaml
+    - Overlay  	- kustomization.yaml
+	
+  NOte: Implement this with GitOps
+  
+# Unit-2
+  - Openshift Template [All resource manifest in single file seperated by "---"]
+    - Template - kind: Resource [eg: kind: Deployment]
+	- Resource knows as Object.
+	- Parameters part.
+	
+  - Helm Chart 
+    - Helm Operations.
+	
+# Unit-3 
+  - Identity provider setup [idp=htpasswd ; idp=LDAP]
+    - users operations w.r.t IDP - add/delete/update via extracting the secret 
+	- secret type is generic ; namespace=openshift-config 
+	- backed Flow.
+	1-[Openshift-Oauth server "oc get oauth/cluster -o yaml]
+	2-[Openshift-apiserver]
+	3-[Openshift-kube-apiserver 
+	4-[ETCD;Kube-COntroller; Kube-scheduler]
+	
+	5- oc get pods -n openshift-authentication 
+	   authentication service running on this pods.
+
+   - RBAC, Group, serviceaccount 
+     rule; roles; binding [clusterrolebindings]
+	 RBAC w.r.t local-namespace & Cluster
+	 Defaults roles - [cluster-admin ; cluster-status ; cluster-read ; admin ; edit; view; basic-users]
+	 Groups opearations.
+	 
+	 oc adm policy 
+	 oc adm group 
+	 
+# Unit-4 
+   - OCP networking 
+     service [svc-type = ClusterIP, LoadBalancer, NodePort]
+	 FYI 
+	 - If using LoadBalancer w.r.t bare metail/priavte/virtulization - metalLB.
+     - NodePort - Old concepts.
+     - CLusterIP - expose service [It create route - http ]
+       route based on HAproxy concepts 
+
+       Any route - http://*.apps.ClusterName.BaseDomain
+	   
+                   http://ApplicationName-Namespace.apps.ClusterName.BaseDomain
+  
+     $ oc expose service service-name 
+	 $ oc get route 
+	 appName-namespace.apps.ocp4.example.com
+	 
+	 $ oc expose service service-name --hostname booking-server01.apps.ocp4.example.com 
+	 $ oc get route 
+	 booking-server01.apps.ocp4.example.com
+
+	
+	- all route connected via wildcard domain [*.apps.ocp4.exapmle.com -> 192.168.50.254]
+	  FYI- it's pointing towards haproxy node.
+	  
+	- Secure Route via TLS termination [ https - Edge Route; Passthrough ; Re-encryption ]
+    - Edge Route: TLS termination at route level.
+      - WB to Route [ Encrypted Communication ]	
+	  - Route forward the packets towards POD [route forward to service; then service to pod ]
+	  - Route towards pod Communication - in plan text 
+	  FYI:-
+	    WB to Route     - HAproxy
+		service to pod  - INternal LB (via Netfilter ; Netfilter is inbuild feature w.r.t kernel]
+		
+	- Passthrough Route: TLS termination at pod level. 
+      - WB to Route [ Encrypted Communication ]	
+	  - Route forward the packets towards POD [ Encrypted Communication ]	
+	  - TLS termination will be done at POD [Certificate-Key on POD level]
+	  - End to End - [ Encrypted Communication ]	
+	  FYI:-
+	    WB to Route     - HAproxy
+		service to pod  - INternal LB (via Netfilter ; Netfilter is inbuild feature w.r.t kernel]
+	
+    - Re-encryption Route: TLS termination at route level then pod level. 
+      - WB to Route [ Encrypted Communication ]	
+	  - Route forward the packets towards POD [ Encrypted Communication ]	
+	  - End to End - [ Encrypted Communication ]	
+	  FYI:-
+	    WB to Route     - HAproxy
+		service to pod  - INternal LB (via Netfilter ; Netfilter is inbuild feature w.r.t kernel]
+		
+
+  - Network Policy:-
+    
+    Namespace="network-policy"
+    pod=hello ; svc=hello ; route=hello  
+    pod=test  ; svc=test 
+	
+	FYI- network policy implement on "ns=network-policy"
+	
+	
+	Namespace="different-namespace"
+	pod=sample ; svc=sample 
+	
+	
+	case-01:- Check the defaul access - All communication should be allowed.
+	case-02:- Create DMZ w.r.t "ns=network-policy"
+	case-03:- ALlow specific [From sample to hello - must be allowed]
+	
+	case-04:- ALlow specific [From test to hello - must be allowed]
+	case-05:- ALlow specific [From hello to test - must be allowed]
+	case-06:- ALlow specific [From hello to sample - must be allowed]
+	
+	
+	
+	
+####################
+Step1- w.r.t Namespace="network-policy"
+	
+Step2- oc label namespace different-namespace network=different-namespace
+
+oc label namespace network-policy network=network-policy
+
+
+
+
+###############
+Protect Internal Traffic with TLS:-
+Service Certificates:- service-ca controller CA.	
+	
+Step-01:- 
+oc annotate service server service.beta.openshift.io/serving-cert-secret-name=server-secret
+	
+Step-02:-
+ Updating the secret to deployment.
+
+ 
+Step-03:- 
+oc exec no-ca-bundle --  openssl s_client -connect server.network-svccerts.svc:443 
+
+
+    service-name.network-svccerts.svc:443
+  
+Step-04:- Hold certificate for encryption.
+  - create RM-configmap 
+  - Certificate updated to configmap
+  
+  $ oc create cm ca-bundle 
+  $ oc annotate configmap ca-bundle  service.beta.openshift.io/inject-cabundle=true
+  
+ ####################
+ Expose non-HTTP/SNI Applications
+  - Load Balancer Services 
+  - Multus Secondary Networks 
+  
+  master01 [oc debug node/master01 ; chroot /hosts]
+  ens3 -> br-ex -> 192.168.50.10/24 
+  ens4 -> 192.168.51.10/24
+  
+  
+ ##################
+ Enable Developer Self-Service:-
+ 
+ - Quota [kind: ResoureQuota]
+ - Limit [kind: LimitRange]
+ - Template 
+ 
+ 
+ ResoureQuota:-
+  - Kubernetes/Openshift resources [pod,svc,rs,pvc,secret,cm etc ]
+  - Compute resource [CPU, Memoery, Storage ]
+ 
+ Namespace=demo01 [10Gi, 7CPU core, 50Gi Storage, pod=30, svc=5, pvc=20, secret=20 ]
+ 
+  CPU - 
+  [Socket - Physical Processor ; Core Per Socket ; Thread per Core 
+  
+  1core = 1000m
+  1G = 1000M
+  1Gi = 1024Mi 
+  
+  
+  LimitRange [requests & Limit 
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+  
+  
+   
+   
+   
+   
+   
+   
+
+
+
+
+
+
+
+  

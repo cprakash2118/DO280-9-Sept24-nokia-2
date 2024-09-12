@@ -1,0 +1,400 @@
+#https://github.com/cprakash2118/DO280-9-Sept24-nokia
+
+POint-01:-
+# Login to Red Hat Online Leaning Platform (ROL)
+  https://rol.redhat.com [username/password]
+
+  - Download eBook (DO280-student-Guide-v414.pdf)
+  - Access Red Hat Cloud labs.
+
+POint-02:-
+https://www.redhat.com/en/resources/2023-forrester-wave-multicloud-container-platform
+https://reprints2.forrester.com/#/assets/2/431/RES178526/report
+
+# Product:- Red Hat OpenShift (OpenShift anywhere)
+
+Product reference - https://www.redhat.com/en/technologies/cloud-computing/openshift
+Product Docs - https://docs.redhat.com/en/documentation/openshift_container_platform/4.14
+
+2.1 - Cloud services editions:-
+- Red Hat OpenShift Service on AWS
+- Microsoft Azure Red Hat OpenShift
+- Red Hat OpenShift Dedicated
+- Red Hat OpenShift on IBM Cloud
+
+
+2.2 Self-managed editions
+- Red Hat OpenShift Kubernetes Engine (RHOKE)
+- Red Hat OpenShift Container Platform (RHOCP)
+- Red Hat OpenShift Platform Plus (Additional Services)
+
+2.3 Services & add-ons
+- Red Hat OpenShift AI  (AI267 + EX267)
+- Red Hat OpenShift Virtualization (DO316 + EX316)
+- Red Hat Quay [DO480 + EX480 ]
+- Red Hat Advanced Cluster Management for Kubernetes [DO480 + EX480 ] 
+- Red Hat Advanced Cluster Security for Kubernetes [DO480 + EX480 ]
+- Red Hat 3scale API Management [DO240 + EX240 ]
+- Red Hat OpenShift Consulting
+
+
+FYI-
+ "Kubernetes" vs "RHOCP"
+
+- Kubernetes layout:-
+Product doc reference - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+https://kubernetes.io/docs/setup/production-environment/container-runtimes/
+
+Layer-06   End User application [gmail.com/amazone.com/citi.com ]
+Layer-05   Add on Kubernetes services [coreDNS, Networking, LB-metalLB etc]
+Layer-04   Certified Kubernetes [installed via kubeadm]
+Layer-03   Container Run time [containerd, crio, docker, rocket etc]
+Layer-02   OS (Server based) - RHEL/SUSE/Oracle Linux [Enterpirse Linux]
+Layer-01   h/w or VMs or Cloud 
+
+
+- RHOCP - Red Hat OpenShift Container Platform.
+
+Layer-07   End User Application deployed on OCP cluster.
+Layer-06   Red Hat OpenShift Plus 
+Layer-05   Red Hat OpenShift Container Platform (RHOCP) - Add-on services 
+Layer-04   Certified Kubernetes - Red Hat OpenShift Kubernetes Engine (RHOKE)
+Layer-03   Container RUN time env [crio]
+Layer-02   Red Hat Enterpirse Linux CoreOS - Single image.[coreOS version is OpenShift version] 
+Layer-01   h/w or VMs or Cloud 
+
+
+
+# Training:- DO280v414 
+DO180/280/380  - Admin part for OCP 
+# Exam:- EX280v414 
+
+
+POint-03:- Classroom Environment:-
+
+- Users details:-
+   Login to any VMs/Serves- 
+    student/student  [sudo access]
+	root/redhat [remote root login not working in that case use "student" account].
+	
+	
+   Login to OCP cluster- Using CLI and Web Console:-
+	
+    kubeadmin/kubeadmin-password 
+	  - NOte: ssh root@utility ; cd /home/lab/ocp4/auth ; ls -l kubeadmin-password kubeconfig
+	
+	LDAP login [FYI]
+	admin/redhatocp 
+	developer/developer 
+	
+	FYI- How to login to OCP cluster.
+	
+	$ oc login -u admin -p redhatocp https://api.ocp4.example.com:6443 
+	
+	FYI - https://api.ocp4.example.com:6443 
+	
+	API URL for OCP cluster - https://api.clusterName.BaseDomain:6443
+	
+	Example:- 
+	Multiple OCP clusters:-
+	1st Cluster Name: apac 
+	2nd Cluster Name: emea
+    3rd Cluster Name: na 
+
+    BaseDomain - citi.com 
+
+   API URL for 1st cluster - https://api.apac.citi.com:6443 
+   API URL for 2nd cluster - https://api.emea.citi.com:6443 
+   API URL for 3rd cluster - https://api.na.citi.com:6443 
+   
+   
+   $ oc login -u admin -p redhatocp "API URL"
+   
+   
+   As per DO280 LAB - 
+   clusterName - ocp4 
+   BaseDomain  - example.com 
+   API URL - https://api.ocp4.example.com:6443 
+   
+   Web COnsole - https://applicationName-NameSpaceName.apps.clusterName.BaseDomain
+   Web COnsole - https://console-openshift-console.apps.ocp4.example.com
+   
+ 
+  VMs/Servers Details:-
+  workstation.lab.example.com     172.25.250.0/24    172.25.250.9
+  bastion.lab.example.com         172.25.250.0/24    172.25.250.254
+  utility.lab.example.com         172.25.250.0/24    172.25.25.253
+  
+  registry.ocp4.example.com       192.168.50.0/24    192.168.50.50 
+  idm.ocp4.example.com            192.168.50.0/24    192.168.50.40 
+  master01.ocp4.example.com       192.168.50.0/24    192.168.50.10
+  utility.ocp4.example.com        192.168.50.0/24    192.168.50.254 
+                                  192.168.51.0/24    192.168.51.254 
+								  
+Example: As per query 
+
+master01-03 (3 master node)
+worker01-0N (N>=2)
+
+40-50 micro services - 
+ - booking 
+ - payment 
+ - cart 
+ - notification
+ - FE UI 
+ - profile etc 
+ 
+ master01 
+ master02
+ master03 
+ 
+ worker01 
+ worker02 
+ ..
+ ..
+ worker120
+ 
+ Note: 
+ - worker01-10 - payment 
+ - worker11-20 - booking 
+ 
+- w.r.t RHOCPv4.6 [3 master can handle 2k worker nodes].
+
+##################################################
+### Unit 1st- Declarative Resource Management
+- Resource Manifests.
+- Kustomize Overlays.
+
+
+Resource Manifests:- 
+
+Kubernetes/OpenShift resources:- 
+1. pod [Consider this for DO280 -> 1 pod - 1 container ]
+2. service 
+3. deployment 
+4. replicaset 
+5. secret 
+6. configmap 
+7. pv 
+8. pvc 
+9. statefulSet 
+10. Route 
+11. many more ..  
+
+
+Kubernetes/OpenShift resources manifest:-
+pod.yaml 
+service.yaml 
+deployment.yaml 
+ 
+
+#Imperative Versus Declarative Workflows
+ 
+ - Imperative Workflows
+ 
+ app01 -> pod01 
+ 
+ oc new-app --name appname httpd:2.4 
+ 
+ pod 
+ svc 
+ deployment 
+ replicaSet 
+ 
+ 
+ - Declarative Workflows:-
+ 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: example-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: httpd 
+    imagePullPolicy: IfNotPresent
+    name: httpd
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+
+##############
+kubectl create deployment db-pod --port 3306 --image registry.ocp4.example.com:8443/rhel8/mysql-80
+kubectl set env deployment/db-pod MYSQL_USER='user1'  MYSQL_PASSWORD='mypa55w0rd' MYSQL_DATABASE='items'
+
+
+Creating Kubernetes Manifests.
+
+$ kubectl create deployment hello-openshift -o yaml --image registry.ocp4.example.com:8443/redhattraining/hello-world-nginx:v1.0 --save-config --dry-run=client > example-deployment.yaml
+
+YAML Validation:-
+$ kubectl apply -f example-deployment.yaml --dry-run=server --validate=true
+
+oc create --save-config -f depl.yaml
+oc apply -f depl.yaml 
+oc diff -f depl.yaml
+
+
+
+git.ocp4.example.com [registry.ocp4.example.com ]
+
+
+##############
+Kustomize Overlays :-
+- It manage resource manifest more organized way.
+- Multiple env [prod, stag, dev, test, INT etc].
+
+To implement kustomization.
+
+base
+├── configmap.yaml
+├── deployment.yaml
+├── secret.yaml
+├── service.yaml
+├── route.yaml
+└── kustomization.yaml
+
+vim kustomization.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- configmap.yaml
+- deployment.yaml
+- secret.yaml
+- service.yaml
+- route.yaml
+
+
+Overlays:-
+base
+├── configmap.yaml
+├── deployment.yaml
+├── secret.yaml
+├── service.yaml
+├── route.yaml
+└── kustomization.yaml
+overlay
+└── development
+    └── kustomization.yaml
+	|- cm.yaml 
+	|- deployment.yaml 
+└── testing
+    └── kustomization.yaml
+└── production
+    ├── kustomization.yaml
+    └── patch.yam
+	|- deployment.yaml 
+
+
+
+- patch: |- 
+ -  op: replace
+    path: /spec/replicas
+    value: 15
+  target:
+    kind: Deployment
+    name: frontend
+  resources: 
+    - ../../base
+commonLabels: 
+ env: test
+
+
+Kustomize Overlays
+
+##############################
+Unit -2 - Deploy Packaged Applications:-
+
+- OpenShift Templates 
+- Helm Charts
+
+
+- OpenShift Templates:-
+ - OpenShift/kubernetes resources-
+   [pod,service,replicaset,deployment,statefulset,secret,configmap etc ]
+  
+ - Resources or Objects w.r.t Template  
+  kind: Pod 
+  kind: Deployment 
+  kind: Secret
+
+ - namespace (w.r.t OCP - project)
+   projects/namespace:-
+   - kube* [ belongs to kubernetes]
+   - openshift* [belongs to OCP project]
+   - In every projects some applications deployed
+     FYI- some applications means - kubernetes/OpenShift services.
+
+-n [pointing towards specpic namespace]
+
+-  oc process --parameters cache-service -n openshift
+-  oc process --parameters -f my-cache-service.yaml
+-  oc get template cache-service -o yaml -n openshift
+-  oc new-app --template=cache-service -p APPLICATION_USER=my-user 
+
+
+
+Deploy applications via template:-
+$ oc process my-cache-service  -p APPLICATION_USER=user1 -o yaml > my-cache-service-manifest.yaml
+$ oc apply -f my-cache-service-manifest.yaml 
+
+$ oc process my-cache-service --param-file=my-cache-service-params.env | oc apply -f -
+
+$ oc process my-cache-service --param-file=my-cache-service-params.env  -o yaml > mytemp.yaml 
+$ oc apply mytemp.yaml
+
+$ oc diff -f mytemp.yaml
+
+
+##########
+Helm Charts
+
+
+To deploy MetalLB on your Kubernetes cluster using Helm and then configure an Ingress controller along with services exposed via NodePort and LoadBalancer, you'll follow a sequence of steps.
+
+
+1-Install Helm on CentOS 9, Download the Helm binary:
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+
+2- Run the Helm installation script:
+chmod 700 get_helm.sh
+./get_helm.sh
+
+Verify the Helm installation:
+helm version
+
+3- Add the MetalLB Helm Repository
+Add the MetalLB Helm repository:
+helm repo add metallb https://metallb.github.io/metallb
+
+4- Update your Helm repositories:
+helm repo update
+
+5- Install MetalLB using Helm- Create a namespace for MetalLB
+kubectl create namespace metallb-system
+
+6- Install MetalLB:
+helm install metallb metallb/metallb --namespace metallb-system
+
+
+
+
+
+	 
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
